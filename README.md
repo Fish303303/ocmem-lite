@@ -16,7 +16,7 @@ Most agent-memory plugins inject a pile of retrieved context on every turn, or s
 - **Small, fixed digest.** Top facts are written into `AGENTS.md` as a managed block, so they ride
   along with the system prompt — no extra tool call, no vector search.
 - **Topic groups (L2).** Only the current topic's facts are expanded; other topics are shown as
-  counts (`other topics: stocks 3`). One extra line instead of a wall of memories.
+  counts (`other topics: fitness 3`). One extra line instead of a wall of memories.
 - **On-demand search.** A single `memory` tool (add / search / list / forget) for everything else.
 
 | | OCMem | Typical memory plugin |
