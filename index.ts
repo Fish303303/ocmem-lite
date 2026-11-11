@@ -267,6 +267,67 @@ function autoCapture(text: string, sid = ""): { added: number } {
   return { added }
 }
 
+// ---------------- AI 抽取 ----------------
+// 用宿主模型判断“这条消息里有没有值得长期记住的东西”，替代纯正则。
+// 失败或关闭时退回正则，绝不影响对话本身。
+const AI_ON = (process.env.OCMEM_AI || "1") !== "0"
+const AI_MODEL = {
+  providerID: process.env.OCMEM_AI_PROVIDER || "opencode-go",
+  id: process.env.OCMEM_AI_MODEL || "deepseek-v4.1-flash",
+}
+const AI_PROMPT = [
+  "从下面这段用户消息里，抽取值得长期记住的稳定信息：偏好、习惯、规则、设定（时区、工具、命名、禁忌等）。",
+  "只要以后仍然成立的；提问、玩笑、一次性命令、临时任务、测试内容都不要。",
+  "每条不超过30个字，改写成第三人称陈述句。",
+  "没有就只输出 NONE。只输出句子，每行一条，不要编号，不要解释。",
+  "",
+  "消息：",
+].join("\n")
+
+function skipForAI(t: string) {
+  const s = t.trim()
+  if (s.length < 8) return true
+  if (/^[/!]/.test(s)) return true
+  if (/^(ok|okay|好+|嗯+|收到|继续|下一步|谢谢|你好)[。!！]?$/i.test(s)) return true
+  if (/```/.test(s)) return true
+  return false
+}
+
+async function extractWithAI(ctx: any, text: string): Promise<string[]> {
+  const r = await ctx.experimental.generate.text({
+    prompt: AI_PROMPT + text.slice(0, 1500),
+    model: AI_MODEL,
+  })
+  const raw = String(r?.text || "").trim()
+  if (!raw || /^NONE\b/i.test(raw)) return []
+  return raw
+    .split(/\r?\n/)
+    .map((s: string) => s.replace(/^[-*\d.、\s]+/, "").trim())
+    .filter((s: string) => s.length >= 4 && s.length <= 60)
+    .slice(0, 5)
+}
+
+async function aiCapture(ctx: any, text: string, sid = ""): Promise<{ added: number; source: string }> {
+  if (!AI_ON || skipForAI(text)) return { added: autoCapture(text, sid).added, source: "rule" }
+  let items = load()
+  let added = 0
+  try {
+    const facts = await extractWithAI(ctx, text)
+    for (const f of facts) {
+      const r = addFact(items, f)
+      items = r.items
+      if (!r.dup) added++
+    }
+  } catch {
+    return { added: autoCapture(text, sid).added, source: "rule" }
+  }
+  if (added > 0) {
+    save(items)
+    writeDigest(items, sid)
+  }
+  return { added, source: "ai" }
+}
+
 // L2 蒸馏：攒够 8 条再用便宜模型合并成 ≤4 条场景句；失败就保持原样，不影响对话
 async function distill(ctx: any) {
   const items = load()
@@ -383,7 +444,7 @@ export default Plugin.define({
           input?.sessionID ?? input?.session?.id ?? input?.info?.sessionID ?? ""
         )
         if (typeof t === "string" && t.trim()) {
-          autoCapture(t, sid)
+          await aiCapture(ctx, t, sid)
           pushRecent(t, sid)
           writeDigest(load(), sid)
           const uns = load().filter((m) => m.kind !== "scene" && !m.distilled).length
