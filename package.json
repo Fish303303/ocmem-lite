@@ -1,7 +1,7 @@
 {
-  "name": "opencode-ocmem",
+  "name": "opencode-ocmem-lite",
   "version": "0.1.0",
-  "description": "OCMem: token-cheap long-term memory for OpenCode - local, no embedding model, auto-capture, topic digests.",
+  "description": "OCMem Lite: token-cheap long-term memory for OpenCode - local, no embedding model, auto-capture, topic digests.",
   "type": "module",
   "main": "index.ts",
   "exports": {

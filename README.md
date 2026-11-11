@@ -1,16 +1,16 @@
-# OCMem
+# OCMem Lite
 
 **Token-cheap long-term memory for [OpenCode](https://opencode.ai).**
 Local-first, no embedding model, no API keys — about **200 tokens per request** instead of 1–2k.
 
 ```
-opencode plugin add github:Fish303303/ocmem
+opencode plugin add github:Fish303303/ocmem-lite
 ```
 
 ## Why another memory plugin?
 
 Most agent-memory plugins inject a pile of retrieved context on every turn, or ship a
-500 MB embedding model. OCMem takes the opposite bet:
+500 MB embedding model. OCMem Lite takes the opposite bet:
 
 - **AI extraction, rules as fallback.** A small model (default `deepseek-v4.1-flash`) reads each user message and pulls out durable facts; if the call fails, a local regex takes over. One short call per message, not a per-turn context dump.
 - **Small, fixed digest.** Top facts are written into `AGENTS.md` as a managed block, so they ride
@@ -19,7 +19,7 @@ Most agent-memory plugins inject a pile of retrieved context on every turn, or s
   counts (`other topics: deploy 3`). One extra line instead of a wall of memories.
 - **On-demand search.** A single `memory` tool (add / search / list / forget) for everything else.
 
-| | OCMem | Typical memory plugin |
+| | OCMem Lite | Typical memory plugin |
 | --- | --- | --- |
 | Fixed cost per request | ~200 tokens (measured) | 1–2k (estimated) |
 | Vector model | none | 100–500 MB |
@@ -27,11 +27,11 @@ Most agent-memory plugins inject a pile of retrieved context on every turn, or s
 | Storage | local JSON | SQLite / cloud |
 
 The 1–2k figure for other plugins is an estimate from their documentation and injection
-format — it is not a benchmark. OCMem's own number is measured; see below.
+format — it is not a benchmark. OCMem Lite's own number is measured; see below.
 
 ## Measured cost
 
-Method: two fresh `opencode run` sessions with the identical prompt, one with the OCMem digest
+Method: two fresh `opencode run` sessions with the identical prompt, one with the OCMem Lite digest
 block in `AGENTS.md` and one without; prompt tokens read from OpenCode's session database.
 
 | Run | Prompt tokens |
