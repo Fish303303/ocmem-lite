@@ -4,7 +4,7 @@
 Local-first, no embedding model, no API keys — about **200 tokens per request** instead of 1–2k.
 
 ```
-opencode plugin add opencode-ocmem
+opencode plugin add github:Fish303303/ocmem
 ```
 
 ## Why another memory plugin?
