@@ -78,8 +78,7 @@ Nothing leaves your machine.
 
 ## Limits
 
-- Rule-based capture is conservative: it will miss facts phrased unusually. Say `remember …` to
-  force a save, or call the `memory` tool.
+- Capture runs on a small model, so unusually worded facts can still be missed. Say `remember …` to force a save, or call the `memory` tool.
 - No semantic search (by design). Chinese/English both work through character bigrams.
 - The digest is capped at 6 facts per topic; older facts stay searchable but not injected.
 
@@ -88,5 +87,3 @@ Nothing leaves your machine.
 MIT
 
 ---
-
-_练习备注：这一行是鱼自己在终端里提交上去的。_
