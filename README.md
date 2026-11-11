@@ -12,7 +12,7 @@ opencode plugin add opencode-ocmem
 Most agent-memory plugins inject a pile of retrieved context on every turn, or ship a
 500 MB embedding model. OCMem takes the opposite bet:
 
-- **Rules, not models.** Auto-capture runs locally on your message (regex), so it costs **0 tokens**.
+- **AI extraction, rules as fallback.** A small model (default `deepseek-v4.1-flash`) reads each user message and pulls out durable facts; if the call fails, a local regex takes over. One short call per message, not a per-turn context dump.
 - **Small, fixed digest.** Top facts are written into `AGENTS.md` as a managed block, so they ride
   along with the system prompt — no extra tool call, no vector search.
 - **Topic groups (L2).** Only the current topic's facts are expanded; other topics are shown as
@@ -55,6 +55,18 @@ prefix is cached (`cache.read`), so the billed cost is lower than the nominal si
 4. **Short-term recall** — the last few non-question messages from previous sessions are kept under
    “last talked about”, so a fresh session can continue where you left off.
 5. **Retrieval tool** — `memory` with `search` (bigram + recency + usage scoring), `list`, `forget`.
+
+## AI extraction
+
+Capture is model-based by default:
+
+| Env | Default | Meaning |
+| --- | --- | --- |
+| `OCMEM_AI` | `1` | `0` turns model extraction off and falls back to regex |
+| `OCMEM_AI_PROVIDER` | `opencode-go` | provider id used for extraction |
+| `OCMEM_AI_MODEL` | `deepseek-v4.1-flash` | model id used for extraction |
+
+Short messages, slash commands, code blocks and pure acknowledgements skip the call. If extraction fails, capture silently falls back to rules, so it can never break a conversation.
 
 ## Storage
 
